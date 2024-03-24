@@ -9,6 +9,7 @@ import time
 user = "T1BB3"
 password = "T1BB3-senha"
 
+screen_controller = GameScreenController()
 
 def main():
     running = True
@@ -19,7 +20,7 @@ def main():
                 running = False
 
         #game states
-        init_screen()
+        screen_controller.render_current_screen()
         pygame.time.delay(100)
 
 
