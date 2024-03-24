@@ -1,6 +1,5 @@
 import pygame
 from pygame.locals import *
-from snake import Snake
 from game_screens import *
 
 import paho.mqtt.client as mqtt
