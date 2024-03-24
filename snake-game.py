@@ -11,19 +11,51 @@ password = "T1BB3-senha"
 
 screen_controller = GameScreenController()
 
+########################
+# Snake variables
+game_state = 0 # 0 = init, 1 = in_game, 2 = game over, 3 = pause
+direction = 'right' # Initial direction
+
+########################
 def main():
     running = True
     while running:
-        # Event handling loop
         for event in pygame.event.get():
-            if event.type == pygame.QUIT or event.type == pygame.KEYDOWN:
+            if event.type == pygame.QUIT:
                 running = False
 
-        #game states
+            # Start the game from the initial screen
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
+                if screen_controller.current_screen == screen_controller.init_screen:
+                    screen_controller.switch_screen(screen_controller.in_game_screen)
+
+                # Restart game from game over screen
+                elif screen_controller.current_screen == screen_controller.game_over_screen:
+                    screen_controller.switch_screen(screen_controller.init_screen)
+
+            # Handle snake movement keys within the game screen
+            if screen_controller.current_screen == screen_controller.in_game_screen:
+                screen_controller.current_screen.handle_input(event)
+
+            # Check for pause toggle
+            if event.type == pygame.KEYDOWN and (screen_controller.current_screen == screen_controller.in_game_screen or screen_controller.current_screen == screen_controller.pause_screen):
+                if event.key == pygame.K_SPACE:
+                    if screen_controller.current_screen == screen_controller.in_game_screen:
+                        screen_controller.switch_screen(screen_controller.pause_screen)
+                    elif screen_controller.current_screen == screen_controller.pause_screen:
+                        screen_controller.switch_screen(screen_controller.in_game_screen)
+                         
+                        continue
+
+        # Update and render the current screen
+        if screen_controller.current_screen == screen_controller.in_game_screen:
+            game_over = screen_controller.current_screen.update_snake()
+            if game_over:
+                screen_controller.current_screen.reinit()
+                screen_controller.switch_screen(screen_controller.game_over_screen)
+
         screen_controller.render_current_screen()
         pygame.time.delay(100)
-
-
 
 main()
 
