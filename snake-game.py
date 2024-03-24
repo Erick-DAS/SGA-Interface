@@ -1,11 +1,32 @@
 import pygame
 from pygame.locals import *
+from snake import Snake
+from game_screens import *
 
 import paho.mqtt.client as mqtt
 import time
 
 user = "T1BB3"
 password = "T1BB3-senha"
+
+
+def main():
+    running = True
+    while running:
+        # Event handling loop
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT or event.type == pygame.KEYDOWN:
+                running = False
+
+        #game states
+        init_screen()
+        pygame.time.delay(100)
+
+
+
+main()
+
+
 
 # TODO: Criar uma função para cada uma das telas:
 # - Inicio
