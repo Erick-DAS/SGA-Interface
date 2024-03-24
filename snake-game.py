@@ -25,6 +25,9 @@ def main():
                 running = False
 
             # Start the game from the initial screen
+            if screen_controller.current_screen == screen_controller.init_screen:
+                screen_controller.current_screen.handle_input(event)
+
             if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
                 if screen_controller.current_screen == screen_controller.init_screen:
                     screen_controller.switch_screen(screen_controller.in_game_screen)
