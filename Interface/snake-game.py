@@ -6,8 +6,18 @@ from enum import Enum
 import paho.mqtt.client as mqtt
 import time
 
-user = "T1BB3"
-password = "T1BB3-senha"
+user = "NOME_DO_WIFI"
+passwd = "SENHA_DO_WIFI"
+
+Broker = "IP_DO_BROKER"
+Port = 1883
+KeepAlive = 60
+
+namespace = "snake_game"
+snake_pos_topic = namespace + "/snake_pos"
+apple_pos_topic = namespace + "/apple_pos"
+state_topic = namespace + "/state"
+comeu_maca_topic = namespace + "/comeu_maca"
 
 screen_controller = GameScreenController()
 
@@ -44,7 +54,15 @@ class game_state(Enum):
     ZERA_CONTAGEMMACA    = '11011'  # r
 
 
-apple_position = [300, 300];
+apple_position = [300, 300]
+
+# binary:
+bin_snake_pos = [0, 0, 0, 0, 0, 0]
+bin_apple_pos = [0, 0, 0, 0, 0, 0]
+bin_state = [0, 0, 0, 0, 0]
+
+comeu_maca = False
+
 
 # Snake variables
 snake_head = [100, 100]
@@ -56,6 +74,53 @@ mode = 0 # 0 = borderless, 1 = with borders
 speed = 0 # 0 = slow, 1 = fast
 ########################
 
+def on_connect(client, userdata, flags, rc):
+    print("Conectado com codigo " + str(rc))
+    client.subscribe(snake_pos_topic, qos=0) 
+    print(f'Conectado ao topico {snake_pos_topic}')
+
+    client.subscribe(apple_pos_topic, qos=0) 
+    print(f'Conectado ao topico {apple_pos_topic}')
+    
+    client.subscribe(state_topic, qos=0) 
+    print(f'Conectado ao topico {state_topic}')
+    
+    client.subscribe(comeu_maca_topic, qos=0) 
+    print(f'Conectado ao topico {comeu_maca_topic}')
+
+# Quando receber uma mensagem (Callback de mensagem)
+def on_message(client, userdata, msg):
+
+    print(f'Estou recebendo mensagem do topico {str(msg.topic)}')
+    if (str(msg.topic) == snake_pos_topic):
+        msg_string = str(msg.payload.decode("utf-8"))
+        print(f'A mensagem eh snake_pos = "{msg_string}"')
+
+        for i in range(0, len(msg_string)):
+            bin_snake_pos[i] = int(msg_string[i])
+
+    elif (str(msg.topic) == apple_pos_topic):
+        msg_string = str(msg.payload.decode("utf-8"))
+        print(f'A mensagem eh apple_pos = "{msg_string}"')
+
+        for i in range(0, len(msg_string)):
+            bin_apple_pos[i] = int(msg_string[i])
+
+    elif (str(msg.topic) == state_topic):
+        msg_string = str(msg.payload.decode("utf-8"))
+        print(f'A mensagem eh state = "{msg_string}"')
+
+        for i in range(0, len(msg_string)):
+            bin_state[i] = int(msg_string[i])
+    
+    elif (str(msg.topic) == comeu_maca_topic):
+        msg_string = str(msg.payload.decode("utf-8"))
+        print(f'A mensagem eh comeu_maca = "{msg_string}"')
+
+        comeu_maca = bool(int(msg_string))
+
+    else:
+        print("Erro! Mensagem recebida de tópico estranho")
 
 def run_states(game_state):
     match game_state:
@@ -66,7 +131,19 @@ def run_states(game_state):
 
 def main():
     running = True
+
+    client = mqtt.Client()              
+    client.on_connect = on_connect      
+    client.on_message = on_message  
+
+    client.username_pw_set(user, passwd)
+
+    client.connect(Broker, Port, KeepAlive)
+
+    client.loop_start() 
+    
     while running:
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False

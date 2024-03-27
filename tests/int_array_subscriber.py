@@ -1,9 +1,9 @@
 import paho.mqtt.client as mqtt
 
-user = "Casa31"
-passwd = "c123EC4567"
+user = "NOME_DO_WIFI"
+passwd = "SENHA_DO_WIFI"
 
-Broker = "192.168.1.19"
+Broker = "IP_DO_BROKER"
 Port = 1883
 KeepAlive = 60
 
