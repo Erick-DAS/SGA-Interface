@@ -8,7 +8,7 @@ pygame.font.init()
 ########################################
 # window values
 bounds = (800,800) # grid_size
-block_size = 100
+block_size = 200
 window = pygame.display.set_mode(bounds)
 
 # set up fonts
@@ -19,8 +19,8 @@ big_font = pygame.font.Font(font_path, big_font_size)
 small_font = pygame.font.Font(font_path, small_font_size)
 
 
-
-step_size = 100  # Adjust based on your grid size
+ 
+step_size = block_size  # Adjust based on your grid size
 UP = (0, -step_size)
 DOWN = (0, step_size)
 LEFT = (-step_size, 0)
@@ -140,14 +140,14 @@ class PauseScreen(GameScreens):
 class InGameScreen(GameScreens):
     def __init__(self, window, big_font, small_font):
         super().__init__(window, big_font, small_font)
-        self.snake = [(100, 100), (90, 100), (80, 100)]
+        self.snake = [(1*block_size, 1*block_size), (0*block_size, 1*block_size), (0*block_size, 0*block_size)]
         self.snake_dir = RIGHT  # Start moving right
         self.food_pos = self.get_random_food_position()
         self.food_eaten = False
 
     def get_random_food_position(self):
-        return (random.randint(0, (bounds[0] // block_size) - 1) * block_size,
-                random.randint(0, (bounds[1] // block_size) - 1) * block_size)
+        return (random.randint(0, (bounds[0] / block_size) - 1) * block_size,
+                random.randint(0, (bounds[1] / block_size) - 1) * block_size)
 
     def update_snake(self):
         # Calculate new head position
@@ -198,7 +198,7 @@ class InGameScreen(GameScreens):
                 self.snake_dir = RIGHT
 
     def reinit(self):
-        self.snake = [(100, 100), (90, 100), (80, 100)]
+        self.snake = [(1*block_size, 1*block_size), (0*block_size, 1*block_size), (0*block_size, 0*block_size)]
         self.snake_dir = RIGHT
         self.food_pos = self.get_random_food_position()
         self.food_eaten = False
