@@ -131,27 +131,39 @@ class InGameScreen(GameScreens):
     def __init__(self, window, big_font, small_font, snake_pos, apple_pos):
         super().__init__(window, big_font, small_font)
 
-
-
         # Initialize the snake and food
         self.snake = [(3*block_size, 1*block_size), (2*block_size, 1*block_size)]
         self.food_pos = [((apple_pos[3]*4 + apple_pos[4]*2 + apple_pos[5]*1)*block_size), ((apple_pos[0]*4 + apple_pos[1]*2 + apple_pos[2]*1)*block_size)]
         self.food_eaten = False
         self.snake_pos = snake_pos
         self.apple_pos = apple_pos
+        self.new_food_item = 0
 
-    def update_snake(self):
+    def update_snake(self, apple_pos, snake_pos):
+
+        self.snake_pos = snake_pos
+        self.apple_pos = apple_pos
+        self.food_pos = [((apple_pos[3]*4 + apple_pos[4]*2 + apple_pos[5]*1)*block_size), ((apple_pos[0]*4 + apple_pos[1]*2 + apple_pos[2]*1)*block_size)]
+        
+
         # Calculate new head position
         new_head = [((self.snake_pos[3]*4 + self.snake_pos[4]*2 + self.snake_pos[5]*1)*block_size), ((self.snake_pos[0]*4 + self.snake_pos[1]*2 + self.snake_pos[2]*1)*block_size)]
-        pygame.time.delay(100)
-        pygame.time.delay(100)
 
         # Insert new head
         self.snake.insert(0, new_head)
 
         # Check for food collision
-        if new_head == self.food_pos:
-            self.food_eaten = True
+
+        if new_head == self.food_pos and self.food_eaten == 0:
+            self.new_food_eaten = 1
+            if(self.new_food_eaten != self.food_eaten):
+                self.food_eaten = True
+                
+
+        elif (self.food_eaten == 1 and new_head != self.food_pos):
+            self.food_eaten = 0
+            new_food_eaten = 0
+
         else:
             self.snake.pop()  # Remove tail
 

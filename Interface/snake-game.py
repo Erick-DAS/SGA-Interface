@@ -6,9 +6,9 @@ from enum import Enum
 import paho.mqtt.client as mqtt
 import time
 
-user = "Das"
-passwd = "12345678"
-Broker = "192.168.135.253"
+user = "JPBF10"
+passwd = "txmv8107"
+Broker = "192.168.13.253"
 Port = 1883
 KeepAlive = 60
 
@@ -22,33 +22,14 @@ comeu_maca_topic = namespace + "/comeu_maca"
 # Game variables
 class game_state(Enum):
     IDLE                 =  [0, 0, 0, 0, 0]  # 0
-    PREPARA              =  [0, 0, 0, 0, 1]  # 1
-    GERA_MACA_INICIAL    =  [0, 0, 0, 1, 0]  # 2
-    RENDERIZA            =  [0, 0, 0, 1, 1]  # 3
-    ESPERA               =  [0, 0, 1, 0, 0]  # 4
-    REGISTRA             =  [0, 0, 1, 0, 1]  # 5
-    MOVE                 =  [0, 0, 1, 1, 0]  # 6
-    COMPARA              =  [0, 0, 1, 1, 1]  # 7
-    VERIFICA_MACA        =  [0, 1, 0, 0, 0]  # 8
-    CRESCE               =  [0, 1, 0, 0, 1]  # 9
-    GERA_MACA            =  [0, 1, 0, 1, 0]  # A
-    PAUSOU               =  [0, 1, 0, 1, 1]  # B
-    FEZ_NADA             =  [0, 1, 1, 0, 0]  # C
-    PERDEU               =  [0, 1, 1, 0, 1]  # D
+    ESPERA              =  [0, 0, 1, 0, 0]  # 1
+    PAUSOU               =  [1, 1, 0, 1, 0]  # B
+    PERDEU               =  [1, 0, 1, 1, 0]  # D
     GANHOU               =  [0, 1, 1, 1, 0]  # E
-    PROXIMO_RENDER       =  [0, 1, 1, 1, 1]  # F
-    ATUALIZA_MEMORIA     =  [1, 0, 0, 0, 0]  # G
-    ContaRAM             =  [1, 0, 0, 0, 1]  # h
-    WriteRAM             =  [1, 0, 0, 1, 0]  # i
-    ComparaRAM           =  [1, 0, 0, 1, 1]  # j
-    RESETMATRIZ          =  [1, 0, 1, 0, 0]  # k
-    COMPARASELF          =  [1, 0, 1, 0, 1]  # l
-    CONTASELF            =  [1, 0, 1, 1, 0]  # m
-    ATUALIZA_MEMORIASELF =  [1, 0, 1, 1, 1]  # n
-    COMPARAMACA          =  [1, 1, 0, 0, 0]  # o
-    CONTAMACA            =  [1, 1, 0, 0, 1]  # p
-    ATUALIZA_MEMORIAMACA =  [1, 1, 0, 1, 0]  # q
-    ZERA_CONTAGEMMACA    =  [1, 1, 0, 1, 1]  # r
+
+    @classmethod
+    def _missing_(cls, value):
+        return cls.ESPERA
 
 
 apple_position = [300, 300]
@@ -56,7 +37,7 @@ apple_position = [300, 300]
 # binary:
 bin_snake_pos = [0, 0, 0, 0, 0, 0]
 bin_apple_pos = [0, 0, 0, 0, 0, 0]
-bin_state = [0, 0, 0, 0, 0]
+bin_state = [0, 0, 0, 0, 0] 
 
 comeu_maca = False
 
@@ -86,7 +67,7 @@ def on_message(client, userdata, msg):
     # print(f'Estou recebendo mensagem do topico {str(msg.topic)}')
     if (str(msg.topic) == snake_pos_topic):
         msg_string = str(msg.payload.decode("utf-8"))
-        print(f'A mensagem eh snake_pos = "{msg_string}"')
+        # print(f'A mensagem eh snake_pos = "{msg_string}"')
 
         for i in range(0, len(msg_string)):
             bin_snake_pos[i] = int(msg_string[i])
@@ -114,24 +95,26 @@ def on_message(client, userdata, msg):
     else:
         print("Erro! Mensagem recebida de tópico estranho")
 
+
 def run_states(game_state):
+    num_espera = 0
+
     match game_state:
 
         case game_state.IDLE :
             screen_controller.switch_screen(screen_controller.init_screen)
 
-        case game_state.ESPERA :
+        case game_state.ESPERA :         
             screen_controller.switch_screen(screen_controller.in_game_screen)
+            screen_controller.current_screen.update_snake(bin_apple_pos, bin_snake_pos)
 
         case game_state.PAUSOU :
             screen_controller.switch_screen(screen_controller.pause_screen)
         
         case game_state.PERDEU :
-            screen_controller.current_screen.reinit()
             screen_controller.switch_screen(screen_controller.game_over_screen)
 
         case game_state.GANHOU :
-            screen_controller.current_screen.reinit()
             screen_controller.switch_screen(screen_controller.game_won_screen)
 
         case _ :
@@ -153,20 +136,17 @@ def main():
     client.connect(Broker, Port, KeepAlive)
 
     client.loop_start() 
-
-    states = game_state(bin_state)
     
     while running:
-
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
 
-            # game_state transitions
-            run_states(states)
-
+        states = game_state(bin_state)
+        # game_state transitions                
+        run_states(states)
+        print(bin_state)
         screen_controller.render_current_screen()
-        pygame.time.delay(100)
 main()
 
 
