@@ -8,7 +8,7 @@ pygame.font.init()
 ########################################
 # window values
 bounds = (800,800) # grid_size
-block_size = 200
+block_size = 100
 window = pygame.display.set_mode(bounds)
 
 # set up fonts
@@ -19,17 +19,15 @@ big_font = pygame.font.Font(font_path, big_font_size)
 small_font = pygame.font.Font(font_path, small_font_size)
 
 
- 
-step_size = block_size  # Adjust based on your grid size
-UP = (0, -step_size)
-DOWN = (0, step_size)
-LEFT = (-step_size, 0)
-RIGHT = (step_size, 0)
+UP = (0, -block_size)
+DOWN = (0, block_size)
+LEFT = (-block_size, 0)
+RIGHT = (block_size, 0)
 ########################################
 
 
 class GameScreenController:
-    def __init__(self):
+    def __init__(self, bin_apple_pos, bin_snake_pos):
         # Initialize the window and font values used throughout the game
         self.window = window
         self.big_font = big_font
@@ -40,7 +38,7 @@ class GameScreenController:
         self.game_over_screen = GameOverScreen(window, big_font, small_font)
         self.game_won_screen = GameWonScreen(window, big_font, small_font)
         self.pause_screen = PauseScreen(window, big_font, small_font)
-        self.in_game_screen = InGameScreen(window, big_font, small_font)
+        self.in_game_screen = InGameScreen(window, big_font, small_font,bin_apple_pos,bin_snake_pos)
         
         # Start with the initial screen
         self.current_screen = self.init_screen
@@ -68,14 +66,6 @@ class InitScreen(GameScreens):
         super().__init__(window, big_font, small_font)
         self.options = ["Border", "Difficulty", "speed"]
         self.current_selection = 0  # Index of the currently selected option
-
-    def handle_input(self, event):
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_DOWN:
-                self.current_selection = (self.current_selection + 1) % len(self.options)
-            elif event.key == pygame.K_UP:
-                self.current_selection = (self.current_selection - 1) % len(self.options)
-        return None  # No selection made
 
     def render(self):
         self.window.fill((0,0,0))
@@ -138,28 +128,23 @@ class PauseScreen(GameScreens):
         pygame.display.update()
 
 class InGameScreen(GameScreens):
-    def __init__(self, window, big_font, small_font):
+    def __init__(self, window, big_font, small_font, snake_pos, apple_pos):
         super().__init__(window, big_font, small_font)
-        self.snake = [(1*block_size, 1*block_size), (0*block_size, 1*block_size), (0*block_size, 0*block_size)]
-        self.snake_dir = RIGHT  # Start moving right
-        self.food_pos = self.get_random_food_position()
-        self.food_eaten = False
 
-    def get_random_food_position(self):
-        return (random.randint(0, (bounds[0] / block_size) - 1) * block_size,
-                random.randint(0, (bounds[1] / block_size) - 1) * block_size)
+
+
+        # Initialize the snake and food
+        self.snake = [(3*block_size, 1*block_size), (2*block_size, 1*block_size)]
+        self.food_pos = [((apple_pos[3]*4 + apple_pos[4]*2 + apple_pos[5]*1)*block_size), ((apple_pos[0]*4 + apple_pos[1]*2 + apple_pos[2]*1)*block_size)]
+        self.food_eaten = False
+        self.snake_pos = snake_pos
+        self.apple_pos = apple_pos
 
     def update_snake(self):
         # Calculate new head position
-        new_head = (self.snake[0][0] + self.snake_dir[0], self.snake[0][1] + self.snake_dir[1])
+        new_head = [((self.snake_pos[3]*4 + self.snake_pos[4]*2 + self.snake_pos[5]*1)*block_size), ((self.snake_pos[0]*4 + self.snake_pos[1]*2 + self.snake_pos[2]*1)*block_size)]
         pygame.time.delay(100)
         pygame.time.delay(100)
-
-        # Check for collisions with boundaries or self
-        if (new_head[0] >= bounds[0] or new_head[0] < 0 or
-            new_head[1] >= bounds[1] or new_head[1] < 0 or
-            new_head in self.snake):
-            return True  # Indicate game over
 
         # Insert new head
         self.snake.insert(0, new_head)
@@ -167,7 +152,6 @@ class InGameScreen(GameScreens):
         # Check for food collision
         if new_head == self.food_pos:
             self.food_eaten = True
-            self.food_pos = self.get_random_food_position()  # Place new food
         else:
             self.snake.pop()  # Remove tail
 
@@ -180,25 +164,13 @@ class InGameScreen(GameScreens):
         pygame.draw.rect(self.window, (255, 0, 0), (*self.food_pos, block_size, block_size))
 
         # draw score
-        score = len(self.snake) - 3
+        score = len(self.snake) - 2
         score_text = self.small_font.render(f'Score: {score}', True, (255, 255, 255))
         self.window.blit(score_text, (10, 10))
 
         pygame.display.update()
 
-    def handle_input(self, event):
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_UP and self.snake_dir != DOWN:
-                self.snake_dir = UP
-            elif event.key == pygame.K_DOWN and self.snake_dir != UP:
-                self.snake_dir = DOWN
-            elif event.key == pygame.K_LEFT and self.snake_dir != RIGHT:
-                self.snake_dir = LEFT
-            elif event.key == pygame.K_RIGHT and self.snake_dir != LEFT:
-                self.snake_dir = RIGHT
-
     def reinit(self):
-        self.snake = [(1*block_size, 1*block_size), (0*block_size, 1*block_size), (0*block_size, 0*block_size)]
-        self.snake_dir = RIGHT
-        self.food_pos = self.get_random_food_position()
+        self.snake = [(3*block_size, 1*block_size), (2*block_size, 1*block_size)]
+        self.food_pos = [((self.apple_pos[3]*4 + self.apple_pos[4]*2 + self.apple_pos[5]*1)*block_size), ((self.apple_pos[0]*4 + self.apple_pos[1]*2 + self.apple_pos[2]*1)*block_size)]
         self.food_eaten = False
