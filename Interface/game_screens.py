@@ -154,15 +154,15 @@ class InGameScreen(GameScreens):
 
         # Check for food collision
 
-        if new_head == self.food_pos and self.food_eaten == 0:
-            self.new_food_eaten = 1
+        if new_head == self.food_pos and self.food_eaten == False:
+            self.new_food_eaten = True
             if(self.new_food_eaten != self.food_eaten):
                 self.food_eaten = True
                 
 
-        elif (self.food_eaten == 1 and new_head != self.food_pos):
-            self.food_eaten = 0
-            new_food_eaten = 0
+        elif (self.food_eaten == True and new_head != self.food_pos):
+            self.food_eaten = False
+            self.new_food_eaten = False
 
         else:
             self.snake.pop()  # Remove tail
