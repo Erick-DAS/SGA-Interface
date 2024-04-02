@@ -6,9 +6,9 @@ from enum import Enum
 import paho.mqtt.client as mqtt
 import time
 
-user = "JPBF10"
-passwd = "txmv8107"
-Broker = "192.168.13.253"
+user = "Das"
+passwd = "12345678"
+Broker = "192.168.135.253"
 Port = 1883
 KeepAlive = 60
 
@@ -30,6 +30,7 @@ class game_state(Enum):
     @classmethod
     def _missing_(cls, value):
         return cls.ESPERA
+    
 
 
 apple_position = [300, 300]
@@ -96,12 +97,19 @@ def on_message(client, userdata, msg):
         print("Erro! Mensagem recebida de tópico estranho")
 
 
-def run_states(game_state):
+
+def run_states(game_state, prev_state):
     num_espera = 0
+     
+    print(f'prev_state: {prev_state}; current_state: {game_state}')
 
     match game_state:
 
         case game_state.IDLE :
+            if prev_state != game_state.IDLE:
+                screen_controller.in_game_screen.reinit()
+                print("REINIT")
+            
             screen_controller.switch_screen(screen_controller.init_screen)
 
         case game_state.ESPERA :         
@@ -110,15 +118,29 @@ def run_states(game_state):
 
         case game_state.PAUSOU :
             screen_controller.switch_screen(screen_controller.pause_screen)
+
         
         case game_state.PERDEU :
+            if prev_state != game_state.PERDEU:
+                screen_controller.in_game_screen.reinit()
+                print("REINIT")
+
             screen_controller.switch_screen(screen_controller.game_over_screen)
 
+
+
         case game_state.GANHOU :
+            if prev_state != game_state.GANHOU:
+                screen_controller.in_game_screen.reinit()
+                print("REINIT")
+
             screen_controller.switch_screen(screen_controller.game_won_screen)
+            prev_state = game_state.GANHOU
+
 
         case _ :
-            print(game_state)
+            pass
+            #print(game_state)
                 
 
 
@@ -127,7 +149,7 @@ screen_controller = GameScreenController(bin_apple_pos, bin_snake_pos)
 def main():
     running = True
 
-    client = mqtt.Client(callback_api_version=mqtt.CallbackAPIVersion.VERSION1)            
+    client = mqtt.Client()            
     client.on_connect = on_connect      
     client.on_message = on_message  
 
@@ -136,16 +158,21 @@ def main():
     client.connect(Broker, Port, KeepAlive)
 
     client.loop_start() 
+
+    prev_state = game_state.IDLE
     
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-
+        
         states = game_state(bin_state)
         # game_state transitions                
-        run_states(states)
-        print(bin_state)
+        run_states(states, prev_state)
+        # print(bin_state)
+        prev_state = states
+        pygame.time.wait(100)
+
         screen_controller.render_current_screen()
 main()
 

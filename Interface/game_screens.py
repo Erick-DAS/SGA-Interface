@@ -132,11 +132,12 @@ class InGameScreen(GameScreens):
         super().__init__(window, big_font, small_font)
 
         # Initialize the snake and food
-        self.snake = [(3*block_size, 1*block_size), (2*block_size, 1*block_size)]
+        self.snake = [[2*block_size, 1*block_size], [1*block_size, 1*block_size]]
         self.food_pos = [((apple_pos[3]*4 + apple_pos[4]*2 + apple_pos[5]*1)*block_size), ((apple_pos[0]*4 + apple_pos[1]*2 + apple_pos[2]*1)*block_size)]
         self.food_eaten = False
         self.snake_pos = snake_pos
         self.apple_pos = apple_pos
+        self.prev_food_pos = apple_pos
         self.new_food_item = 0
 
     def update_snake(self, apple_pos, snake_pos):
@@ -148,26 +149,29 @@ class InGameScreen(GameScreens):
 
         # Calculate new head position
         new_head = [((self.snake_pos[3]*4 + self.snake_pos[4]*2 + self.snake_pos[5]*1)*block_size), ((self.snake_pos[0]*4 + self.snake_pos[1]*2 + self.snake_pos[2]*1)*block_size)]
-
+        changed_pos = False
+        
         # Insert new head
-        self.snake.insert(0, new_head)
+        if new_head != self.snake[0]:
+            self.snake.insert(0, new_head)
+            changed_pos = True
+        else:
+            changed_pos = False
 
         # Check for food collision
+            
+        # rint(f'changed_pos: {changed_pos}; new_head != self.food_pos : {new_head != self.food_pos}; new_head: {new_head}; food_pos: {self.food_pos}')
 
-        if new_head == self.food_pos and self.food_eaten == False:
-            self.new_food_eaten = True
-            if(self.new_food_eaten != self.food_eaten):
-                self.food_eaten = True
-                
-
-        elif (self.food_eaten == True and new_head != self.food_pos):
-            self.food_eaten = False
-            self.new_food_eaten = False
-
-        else:
+        if new_head != self.prev_food_pos and changed_pos == True:
             self.snake.pop()  # Remove tail
+        elif new_head == self.food_pos and changed_pos == True:
+            print("ENTREI NA MACA")
+        
+        self.prev_food_pos = self.food_pos
 
+        # print(self.snake)
         return False  # Game continues
+    
 
     def render(self):
         self.window.fill((0,0,0))
