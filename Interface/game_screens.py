@@ -61,6 +61,7 @@ class GameScreens:
         pass
     
 class InitScreen(GameScreens):
+    
 
     def __init__(self, window, big_font, small_font):
         super().__init__(window, big_font, small_font)
@@ -68,23 +69,41 @@ class InitScreen(GameScreens):
         self.current_selection = 0  # Index of the currently selected option
 
     def render(self):
+        velocity = 1
+        boundary = 0
+        difficulty = 1
+
         self.window.fill((0,0,0))
 
         # Title
         title_text = self.big_font.render('S.G.A', True, (255,255,255))
         title_rect = title_text.get_rect(center=(bounds[0]/2, bounds[1]/2 - 120))
+
+        if boundary == 0:
+            boundary_text = self.small_font.render('Mode: Border', True, (214,205,84))
+        else:
+            boundary_text = self.small_font.render('Mode: No Border', True, (209,38,38))
+        
+        boundary_rect = boundary_text.get_rect(center=(bounds[0]/2, bounds[1]/2))
+
+        if difficulty == 0:
+            difficulty_text = self.small_font.render('Difficulty: Normal', True, (214,205,84))
+        else:
+            difficulty_text = self.small_font.render('Difficulty: Hard', True, (209,38,38))
+        
+        difficulty_rect = difficulty_text.get_rect(center=(bounds[0]/2, bounds[1]/2 + 40))
+
+        if velocity == 0:
+            velocity_text = self.small_font.render('Speed: Normal', True, (214,205,84))
+        else:
+            velocity_text = self.small_font.render('Speed: Fast', True, (209,38,38))
+
+        velocity_rect = velocity_text.get_rect(center=(bounds[0]/2, bounds[1]/2 + 80))
+
         self.window.blit(title_text, title_rect)
-
-        # Options
-        for i, option in enumerate(self.options):
-            # Highlight the current selection
-            if i == self.current_selection:
-                option_text = self.small_font.render(option, True, (255, 255, 0))  # Yellow for selected
-            else:
-                option_text = self.small_font.render(option, True, (255, 255, 255))  # White for others
-
-            option_rect = option_text.get_rect(center=(bounds[0]/2, bounds[1]/2 + (i * 50)))  # Position options with spacing
-            self.window.blit(option_text, option_rect)
+        self.window.blit(boundary_text, boundary_rect)
+        self.window.blit(difficulty_text, difficulty_rect)
+        self.window.blit(velocity_text, velocity_rect)
 
         pygame.display.update()
 
@@ -128,6 +147,7 @@ class PauseScreen(GameScreens):
         pygame.display.update()
 
 class InGameScreen(GameScreens):
+    
     def __init__(self, window, big_font, small_font, snake_pos, apple_pos):
         super().__init__(window, big_font, small_font)
 
