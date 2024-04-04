@@ -39,8 +39,8 @@ apple_position = [300, 300]
 
 # binary:
 bin_snake_pos = [0, 0, 0, 0, 0, 0]
-bin_apple_pos = [0, 0, 1, 0, 1, 0]
-bin_state = [0, 0, 1, 0, 0] 
+bin_apple_pos = [0, 0, 0, 0, 0, 0]
+bin_state = [0, 0, 0, 0, 0] 
 
 comeu_maca = False
 
@@ -183,16 +183,16 @@ screen_controller = GameScreenController(bin_apple_pos, bin_snake_pos, bin_vel, 
 def main():
     running = True
 
-    # client = mqtt.Client(callback_api_version = mqtt.CallbackAPIVersion.VERSION1)            
-    # client.on_connect = on_connect      
-    # client.on_message = on_message  
-# 
-    # client.username_pw_set(user, passwd)
-# 
-    # client.connect(Broker, Port, KeepAlive)
-# 
-    # client.loop_start() 
-# 
+    client = mqtt.Client(callback_api_version = mqtt.CallbackAPIVersion.VERSION1)            
+    client.on_connect = on_connect      
+    client.on_message = on_message  
+
+    client.username_pw_set(user, passwd)
+
+    client.connect(Broker, Port, KeepAlive)
+
+    client.loop_start() 
+
     prev_state = game_state.IDLE
     
     while running:
