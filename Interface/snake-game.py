@@ -17,7 +17,9 @@ snake_pos_topic = namespace + "/snake_pos"
 apple_pos_topic = namespace + "/apple_pos"
 state_topic = namespace + "/state"
 comeu_maca_topic = namespace + "/comeu_maca"
-
+vel_selector_topic = namespace + "/vel_selector"
+mode_selector_topic = namespace + "/mode_selector"
+diff_selector_topic = namespace + "/diff_selector"
 ########################
 # Game variables
 class game_state(Enum):
@@ -37,15 +39,15 @@ apple_position = [300, 300]
 
 # binary:
 bin_snake_pos = [0, 0, 0, 0, 0, 0]
-bin_apple_pos = [0, 0, 0, 0, 0, 0]
-bin_state = [0, 0, 0, 0, 0] 
+bin_apple_pos = [0, 0, 1, 0, 1, 0]
+bin_state = [0, 0, 1, 0, 0] 
 
 comeu_maca = False
 
 # Game settings
-difficulty = 0 # 0 = 8 apples to win, 1 = 16 apples to win
-mode = 0 # 0 = borderless, 1 = with borders
-speed = 0 # 0 = slow, 1 = fast
+bin_vel = [0]   # 0 = 8 apples to win, 1 = 16 apples to win
+bin_mode = [0]  # 0 = borderless, 1 = with borders
+bin_diff = [0]  # 0 = slow, 1 = fast
 ########################
 
 def on_connect(client, userdata, flags, rc):
@@ -61,6 +63,18 @@ def on_connect(client, userdata, flags, rc):
     
     client.subscribe(comeu_maca_topic, qos=0) 
     print(f'Conectado ao topico {comeu_maca_topic}')
+
+    client.subscribe(comeu_maca_topic, qos=0) 
+    print(f'Conectado ao topico {comeu_maca_topic}')
+
+    client.subscribe(vel_selector_topic, qos=0) 
+    print(f'Conectado ao topico {vel_selector_topic}')
+
+    client.subscribe(mode_selector_topic, qos=0) 
+    print(f'Conectado ao topico {mode_selector_topic}')
+
+    client.subscribe(diff_selector_topic, qos=0)
+    print(f'Conectado ao topico {diff_selector_topic}')    
 
 # Quando receber uma mensagem (Callback de mensagem)
 def on_message(client, userdata, msg):
@@ -93,6 +107,25 @@ def on_message(client, userdata, msg):
 
         comeu_maca = bool(int(msg_string))
 
+    elif (str(msg.topic) == vel_selector_topic):
+        msg_string = str(msg.payload.decode("utf-8"))
+        print(f'A mensagem eh bin_vel = "{msg_string}"')
+
+        bin_vel[0] = int(msg_string)
+
+    elif (str(msg.topic) == mode_selector_topic):
+        msg_string = str(msg.payload.decode("utf-8"))
+        print(f'A mensagem eh bin_mode = "{msg_string}"')
+
+        bin_mode[0] = int(msg_string)
+
+    elif (str(msg.topic) == diff_selector_topic):
+        msg_string = str(msg.payload.decode("utf-8"))
+        print(f'A mensagem eh bin_diff = "{msg_string}"')
+
+        bin_diff[0] = int(msg_string)
+
+    
     else:
         print("Erro! Mensagem recebida de tópico estranho")
 
@@ -111,6 +144,7 @@ def run_states(game_state, prev_state):
                 print("REINIT")
             
             screen_controller.switch_screen(screen_controller.init_screen)
+            screen_controller.current_screen.update_Init(bin_vel[0], bin_mode[0], bin_diff[0])
 
         case game_state.ESPERA :         
             screen_controller.switch_screen(screen_controller.in_game_screen)
@@ -144,21 +178,21 @@ def run_states(game_state, prev_state):
                 
 
 
-screen_controller = GameScreenController(bin_apple_pos, bin_snake_pos)
+screen_controller = GameScreenController(bin_apple_pos, bin_snake_pos, bin_vel, bin_mode, bin_diff)
 
 def main():
     running = True
 
-    client = mqtt.Client()            
-    client.on_connect = on_connect      
-    client.on_message = on_message  
-
-    client.username_pw_set(user, passwd)
-
-    client.connect(Broker, Port, KeepAlive)
-
-    client.loop_start() 
-
+    # client = mqtt.Client(callback_api_version = mqtt.CallbackAPIVersion.VERSION1)            
+    # client.on_connect = on_connect      
+    # client.on_message = on_message  
+# 
+    # client.username_pw_set(user, passwd)
+# 
+    # client.connect(Broker, Port, KeepAlive)
+# 
+    # client.loop_start() 
+# 
     prev_state = game_state.IDLE
     
     while running:
@@ -171,7 +205,8 @@ def main():
         run_states(states, prev_state)
         # print(bin_state)
         prev_state = states
-        pygame.time.wait(100)
+        print(f'bin_vel: {bin_vel}; bin_mode: {bin_mode}; bin_diff: {bin_diff}')
+        
 
         screen_controller.render_current_screen()
 main()

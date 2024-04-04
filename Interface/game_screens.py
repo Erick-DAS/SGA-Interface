@@ -1,3 +1,5 @@
+import os
+import sys
 import pygame
 from pygame.locals import *
 import random
@@ -12,11 +14,29 @@ block_size = 100
 window = pygame.display.set_mode(bounds)
 
 # set up fonts
-font_path = 'PressStart2P-Regular.ttf'
+
+# select current path of where the file is being executed
+system_path = os.path.dirname(os.path.abspath(__file__))
+# return to parent folder;
+system_path = os.path.dirname(system_path)   
+# enter assets folder
+assets_path = os.path.join(system_path, 'assets')
+
+font_path = os.path.join(assets_path, 'PressStart2P-Regular.ttf')
 big_font_size = 60
 small_font_size = 30
 big_font = pygame.font.Font(font_path, big_font_size)
 small_font = pygame.font.Font(font_path, small_font_size)
+
+
+# load assets
+
+## Apple
+apple_asset = pygame.image.load(os.path.join(assets_path, 'apple_asset.png'))
+apple_asset = pygame.transform.scale(apple_asset, (block_size, block_size))
+
+## Snake
+
 
 
 UP = (0, -block_size)
@@ -27,18 +47,18 @@ RIGHT = (block_size, 0)
 
 
 class GameScreenController:
-    def __init__(self, bin_apple_pos, bin_snake_pos):
+    def __init__(self, bin_apple_pos, bin_snake_pos, bin_vel, bin_mode, bin_diff):
         # Initialize the window and font values used throughout the game
         self.window = window
         self.big_font = big_font
         self.small_font = small_font
 
         # Initialize all screen instances
-        self.init_screen = InitScreen(window, big_font, small_font)
+        self.init_screen = InitScreen(window, big_font, small_font, bin_vel, bin_mode, bin_diff)
         self.game_over_screen = GameOverScreen(window, big_font, small_font)
         self.game_won_screen = GameWonScreen(window, big_font, small_font)
         self.pause_screen = PauseScreen(window, big_font, small_font)
-        self.in_game_screen = InGameScreen(window, big_font, small_font,bin_apple_pos,bin_snake_pos)
+        self.in_game_screen = InGameScreen(window, big_font, small_font, bin_apple_pos, bin_snake_pos)
         
         # Start with the initial screen
         self.current_screen = self.init_screen
@@ -63,15 +83,18 @@ class GameScreens:
 class InitScreen(GameScreens):
     
 
-    def __init__(self, window, big_font, small_font):
+    def __init__(self, window, big_font, small_font, bin_vel, bin_mode, bin_diff):
         super().__init__(window, big_font, small_font)
         self.options = ["Border", "Difficulty", "speed"]
         self.current_selection = 0  # Index of the currently selected option
+        self.bin_vel = bin_vel
+        self.bin_mode = bin_mode
+        self.bin_diff = bin_diff
 
     def render(self):
-        velocity = 1
-        boundary = 0
-        difficulty = 1
+        velocity = self.bin_vel
+        boundary = self.bin_mode
+        difficulty = self.bin_diff
 
         self.window.fill((0,0,0))
 
@@ -80,9 +103,9 @@ class InitScreen(GameScreens):
         title_rect = title_text.get_rect(center=(bounds[0]/2, bounds[1]/2 - 120))
 
         if boundary == 0:
-            boundary_text = self.small_font.render('Mode: Border', True, (214,205,84))
+            boundary_text = self.small_font.render('Mode: No Border', True, (214,205,84))
         else:
-            boundary_text = self.small_font.render('Mode: No Border', True, (209,38,38))
+            boundary_text = self.small_font.render('Mode: Border', True, (209,38,38))
         
         boundary_rect = boundary_text.get_rect(center=(bounds[0]/2, bounds[1]/2))
 
@@ -106,6 +129,11 @@ class InitScreen(GameScreens):
         self.window.blit(velocity_text, velocity_rect)
 
         pygame.display.update()
+
+    def update_Init(self, bin_vel, bin_mode, bin_diff):
+        self.bin_vel = bin_vel
+        self.bin_mode = bin_mode
+        self.bin_diff = bin_diff
 
 class GameOverScreen(GameScreens):
     def render(self):
@@ -147,7 +175,7 @@ class PauseScreen(GameScreens):
         pygame.display.update()
 
 class InGameScreen(GameScreens):
-    
+
     def __init__(self, window, big_font, small_font, snake_pos, apple_pos):
         super().__init__(window, big_font, small_font)
 
@@ -180,7 +208,7 @@ class InGameScreen(GameScreens):
 
         # Check for food collision
             
-        # rint(f'changed_pos: {changed_pos}; new_head != self.food_pos : {new_head != self.food_pos}; new_head: {new_head}; food_pos: {self.food_pos}')
+        # print(f'changed_pos: {changed_pos}; new_head != self.food_pos : {new_head != self.food_pos}; new_head: {new_head}; food_pos: {self.food_pos}')
 
         if new_head != self.prev_food_pos and changed_pos == True:
             self.snake.pop()  # Remove tail
@@ -197,7 +225,12 @@ class InGameScreen(GameScreens):
         self.window.fill((0,0,0))
         for pos in self.snake:
             pygame.draw.rect(self.window, (0, 255, 0), (*pos, block_size - 10, block_size - 10))
-        pygame.draw.rect(self.window, (255, 0, 0), (*self.food_pos, block_size, block_size))
+        
+
+        #print the apple asset
+        self.window.blit(apple_asset, self.food_pos)
+
+
 
         # draw score
         score = len(self.snake) - 2
