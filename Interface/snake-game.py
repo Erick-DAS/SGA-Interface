@@ -16,7 +16,6 @@ namespace = "snake_game"
 snake_pos_topic = namespace + "/snake_pos"
 apple_pos_topic = namespace + "/apple_pos"
 state_topic = namespace + "/state"
-comeu_maca_topic = namespace + "/comeu_maca"
 vel_selector_topic = namespace + "/vel_selector"
 mode_selector_topic = namespace + "/mode_selector"
 diff_selector_topic = namespace + "/diff_selector"
@@ -42,8 +41,6 @@ bin_snake_pos = [0, 0, 0, 0, 0, 0]
 bin_apple_pos = [0, 0, 0, 0, 0, 0]
 bin_state = [0, 0, 0, 0, 0] 
 
-comeu_maca = False
-
 # Game settings
 bin_vel = [0]   # 0 = 8 apples to win, 1 = 16 apples to win
 bin_mode = [0]  # 0 = borderless, 1 = with borders
@@ -60,12 +57,6 @@ def on_connect(client, userdata, flags, rc):
     
     client.subscribe(state_topic, qos=0) 
     print(f'Conectado ao topico {state_topic}')
-    
-    client.subscribe(comeu_maca_topic, qos=0) 
-    print(f'Conectado ao topico {comeu_maca_topic}')
-
-    client.subscribe(comeu_maca_topic, qos=0) 
-    print(f'Conectado ao topico {comeu_maca_topic}')
 
     client.subscribe(vel_selector_topic, qos=0) 
     print(f'Conectado ao topico {vel_selector_topic}')
@@ -100,12 +91,6 @@ def on_message(client, userdata, msg):
 
         for i in range(0, len(msg_string)):
             bin_state[i] = int(msg_string[i])
-    
-    elif (str(msg.topic) == comeu_maca_topic):
-        msg_string = str(msg.payload.decode("utf-8"))
-        # print(f'A mensagem eh comeu_maca = "{msg_string}"')
-
-        comeu_maca = bool(int(msg_string))
 
     elif (str(msg.topic) == vel_selector_topic):
         msg_string = str(msg.payload.decode("utf-8"))
@@ -183,7 +168,11 @@ screen_controller = GameScreenController(bin_apple_pos, bin_snake_pos, bin_vel, 
 def main():
     running = True
 
-    client = mqtt.Client(callback_api_version = mqtt.CallbackAPIVersion.VERSION1)            
+    # WARNING: If you can't run this file because of API version problems, comment the following line and uncomment the next one  
+    client = mqtt.Client()
+    # client = mqtt.Client(callback_api_version = mqtt.CallbackAPIVersion.VERSION1)            
+    
+    
     client.on_connect = on_connect      
     client.on_message = on_message  
 
