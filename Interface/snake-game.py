@@ -4,7 +4,6 @@ from game_screens import *
 from enum import Enum
 
 import paho.mqtt.client as mqtt
-import time
 
 user = "Das"
 passwd = "12345678"
