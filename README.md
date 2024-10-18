@@ -1,4 +1,4 @@
-# SGA-ESP32
+# SGA-Interface
 
 ## Snake Game Arcade Project
 
