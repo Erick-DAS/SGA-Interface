@@ -102,16 +102,18 @@ def main():
 
     prev_state = GameState.IDLE
 
-    current_byte = ser.read()
-
     while running:
+        current_byte = ser.read()
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
 
+        
         if current_byte != header:
-            current_byte = ser.read()
             continue
+
+        msg = []
 
         for _ in range(size):
             current_byte = ser.read()
@@ -121,12 +123,38 @@ def main():
 
         if current_byte == end_byte:
             print(f"Full serial message: {msg}\n")
-            bin_snake_pos[0:5] = msg[0][0:5]
-            bin_apple_pos[0:5] = msg[1][0:5]
-            bin_state[0:5] = msg[2][0:5]
-            bin_diff[0] = msg[3][1]
-            bin_mode[0] = msg[3][2]
-            bin_vel[0] = msg[3][3]
+
+            byte_value = msg[0][0]
+            byte_bits = [int(bit) for bit in bin(byte_value)[2:].zfill(7)]
+            print(f"bits do 0: {byte_bits}")
+            bin_snake_pos[:] = byte_bits[0:6]
+
+            # Extract bits from msg[1] and assign to bin_apple_pos
+            byte_value = msg[1][0]
+            byte_bits = [int(bit) for bit in bin(byte_value)[2:].zfill(7)]
+            print(f"bits do 1: {byte_bits}")
+            bin_apple_pos[:] = byte_bits[0:6]
+
+            # Extract bits from msg[2] and assign to bin_state
+            byte_value = msg[2][0]
+            byte_bits = [int(bit) for bit in bin(byte_value)[2:].zfill(7)]
+            print(f"bits do 2: {byte_bits}")
+            bin_state[:] = byte_bits[0:6]
+
+            # Extract bits from msg[3] and assign to bin_diff, bin_mode, bin_vel
+            byte_value = msg[3][0]
+            byte_bits = [int(bit) for bit in bin(byte_value)[2:].zfill(8)]
+            byte_bits_reversed = byte_bits[::-1]
+            bin_diff[0] = byte_bits_reversed[1]
+            bin_mode[0] = byte_bits_reversed[2]
+            bin_vel[0] = byte_bits_reversed[3]
+
+            print(f"snake pos: {bin_snake_pos}")
+            print(f"apple pos: {bin_apple_pos}")
+            print(f"state: {bin_state}")
+            print(f"diff: {bin_diff}")
+            print(f"mode: {bin_mode}")
+            print(f"vel: {bin_vel}")
 
         msg = []
 
