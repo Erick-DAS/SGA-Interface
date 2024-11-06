@@ -132,13 +132,13 @@ class InitScreen(GameScreens):
             self.background2_coords = -800
 
         # Title
-        title_background_text = self.little_bigger_font.render("S.G.A", True, (0, 0, 0))
+        title_background_text = self.little_bigger_font.render("S.G.A 2.0", True, (0, 0, 0))
         title_background_rect = title_background_text.get_rect(
             center=(bounds[0] / 2 + 6, bounds[1] / 2 - 115)
         )
 
         title_text = self.big_font.render(
-            "S.G.A", True, (179, 20, 58)
+            "S.G.A 2.0", True, (179, 20, 58)
         )  # 122, 13, 39  24, 106, 237   179, 20, 58
         title_rect = title_text.get_rect(center=(bounds[0] / 2, bounds[1] / 2 - 120))
 
@@ -220,7 +220,7 @@ class GameWonScreen(GameScreens):
         # text background
         text1_background = self.little_bigger_font.render("Ganhou!", True, (0, 0, 0))
 
-        # declare what will be written
+        # declare what will be written  
         text1 = self.big_font.render("Ganhou!", True, (179, 20, 58))
 
         # declare the position of the text

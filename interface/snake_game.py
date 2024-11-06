@@ -12,11 +12,11 @@ from enum import Enum
 
 
 class GameState(Enum):
-    IDLE = [0, 0, 0, 0, 0, 0]  # 0
-    ESPERA = [0, 0, 0, 1, 0, 0]  # 1
-    PAUSOU = [0, 1, 1, 0, 1, 0]  # B
-    PERDEU = [0, 1, 0, 1, 1, 0]  # D
-    GANHOU = [0, 0, 1, 1, 1, 0]  # E
+    IDLE = [0, 0, 0, 0, 0, 0]
+    ESPERA = [0, 0, 0, 1, 0, 0]
+    PAUSOU = [0, 0, 1, 0, 1, 1]
+    PERDEU = [0, 0, 1, 1, 0, 1]
+    GANHOU = [0, 0, 1, 1, 1, 0]
 
     @classmethod
     def _missing_(cls, _):
@@ -103,13 +103,14 @@ def main():
     prev_state = GameState.IDLE
 
     while running:
+        ser.reset_input_buffer()
+
         current_byte = ser.read()
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
 
-        
         if current_byte != header:
             continue
 
@@ -124,37 +125,28 @@ def main():
         if current_byte == end_byte:
             print(f"Full serial message: {msg}\n")
 
+            # msg[i][0] = i'th byte from the package
+            # each byte has only 7 bits instead of 8
+            # each byte can represent one big variable or multiple individual bits
+            # 
+
             byte_value = msg[0][0]
-            byte_bits = [int(bit) for bit in bin(byte_value)[2:].zfill(7)]
-            print(f"bits do 0: {byte_bits}")
+            byte_bits = [int(bit) for bit in bin(byte_value)[2:].zfill(7)] # [2:]
             bin_snake_pos[:] = byte_bits[0:6]
 
-            # Extract bits from msg[1] and assign to bin_apple_pos
             byte_value = msg[1][0]
             byte_bits = [int(bit) for bit in bin(byte_value)[2:].zfill(7)]
-            print(f"bits do 1: {byte_bits}")
             bin_apple_pos[:] = byte_bits[0:6]
 
-            # Extract bits from msg[2] and assign to bin_state
             byte_value = msg[2][0]
             byte_bits = [int(bit) for bit in bin(byte_value)[2:].zfill(7)]
-            print(f"bits do 2: {byte_bits}")
             bin_state[:] = byte_bits[0:6]
 
-            # Extract bits from msg[3] and assign to bin_diff, bin_mode, bin_vel
             byte_value = msg[3][0]
-            byte_bits = [int(bit) for bit in bin(byte_value)[2:].zfill(8)]
-            byte_bits_reversed = byte_bits[::-1]
-            bin_diff[0] = byte_bits_reversed[1]
-            bin_mode[0] = byte_bits_reversed[2]
-            bin_vel[0] = byte_bits_reversed[3]
-
-            print(f"snake pos: {bin_snake_pos}")
-            print(f"apple pos: {bin_apple_pos}")
-            print(f"state: {bin_state}")
-            print(f"diff: {bin_diff}")
-            print(f"mode: {bin_mode}")
-            print(f"vel: {bin_vel}")
+            byte_bits = [int(bit) for bit in bin(byte_value)[2:].zfill(7)]
+            bin_diff[0] = byte_bits[1]  
+            bin_mode[0] = byte_bits[2]
+            bin_vel[0] = byte_bits[3]
 
         msg = []
 
