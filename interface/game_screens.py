@@ -251,40 +251,29 @@ class InGameScreen(GameScreens):
                 self.snake_body.pop()
 
     def render(self):
-        # Clear screen
+        # Background
         self.window.blit(background, (0, 0))
 
-        # Draw apple
-        self.window.blit(
-            apple_asset,
-            (self.food_pos[0] - block_size // 2, self.food_pos[1] - block_size // 2)
-        )
-
-        # Draw snake as continuous line
-        if len(self.snake_body) > 1:
-            pygame.draw.lines(
-                self.window,
-                (35, 165, 35),
-                False,
-                self.snake_body,
-                10  # Line width
+        for pos in self.snake:
+            pygame.draw.rect(
+                self.window, (35, 165, 35), (*pos, block_size - 10, block_size - 10)
             )
 
-        # Draw snake head
-        snake_head_pos = self.snake_body[0]
-        pygame.draw.circle(
-            self.window,
-            (35, 165, 35),
-            snake_head_pos,
-            block_size // 2 - 5
-        )
+        # Draw the eyes on the snake's head
+        if len(self.snake) >= 1:
+            head = self.snake[0]
+            head_x, head_y = head
 
-        # Draw eyes on the snake head
-        if len(self.snake_body) > 1:
-            head = self.snake_body[0]
-            neck = self.snake_body[1]
-            dx = head[0] - neck[0]
-            dy = head[1] - neck[1]
+            if len(self.snake) > 1:
+                neck = self.snake[1]
+                # Calculate direction vector from neck to head
+                dx = head_x - neck[0]
+                dy = head_y - neck[1]
+            else:
+                # Default direction if only one segment
+                dx, dy = 0, -1  # Moving upwards
+
+            # Normalize the direction vector
             length = (dx ** 2 + dy ** 2) ** 0.5
             if length != 0:
                 dx /= length
@@ -292,25 +281,52 @@ class InGameScreen(GameScreens):
             else:
                 dx, dy = 0, -1  # Default direction
 
-            # Orthogonal vector for eye positions
+            # Calculate the perpendicular vector for eye positioning
             ex = -dy
             ey = dx
-            eye_offset = 5
-            eye_radius = 3
 
-            eye1_pos = (int(head[0] + ex * eye_offset), int(head[1] + ey * eye_offset))
-            eye2_pos = (int(head[0] - ex * eye_offset), int(head[1] - ey * eye_offset))
+            # Set the distance from the center to the eyes
+            eye_distance = (block_size - 10) // 4
+            eye_radius = (block_size - 10) // 8
 
-            pygame.draw.circle(self.window, (255, 255, 255), eye1_pos, eye_radius)
-            pygame.draw.circle(self.window, (255, 255, 255), eye2_pos, eye_radius)
+            # Calculate the center of the head
+            head_center_x = head_x + (block_size - 10) // 2
+            head_center_y = head_y + (block_size - 10) // 2
+
+            # Calculate eye positions
+            eye1_x = int(head_center_x + ex * eye_distance + dx * eye_distance)
+            eye1_y = int(head_center_y + ey * eye_distance + dy * eye_distance)
+            eye2_x = int(head_center_x - ex * eye_distance + dx * eye_distance)
+            eye2_y = int(head_center_y - ey * eye_distance + dy * eye_distance)
+
+            # Draw the eyes as red rectangles
+            eye_width = eye_radius * 2
+            eye_height = eye_radius * 2
+
+            # Create rectangles for the eyes
+            eye1_rect = pygame.Rect(
+                eye1_x - eye_radius, eye1_y - eye_radius, eye_width, eye_height
+            )
+            eye2_rect = pygame.Rect(
+                eye2_x - eye_radius, eye2_y - eye_radius, eye_width, eye_height
+            )
+
+            # Draw the eyes
+            pygame.draw.rect(self.window, (255, 0, 0), eye1_rect)
+            pygame.draw.rect(self.window, (255, 0, 0), eye2_rect)
+
+        # Draw the apple
+        self.window.blit(apple_asset, self.food_pos)
 
         # Draw score
-        score = self.snake_length - 2
+        score = len(self.snake) - 2
         score_text = self.small_font.render(f"Score: {score}", True, (179, 20, 58))
         self.window.blit(score_text, (10, 10))
 
+        # Update the display
         pygame.display.update()
-        self.clock.tick(15)  # Control the frame rate
+
+
 
     def reinit(self):
         self.snake_body = []
