@@ -61,9 +61,15 @@ def run_states(game_state, prev_state):
             screen_controller.current_screen.update_snake(bin_apple_pos, bin_snake_pos)
 
         case game_state.PAUSOU:
+            if prev_state == game_state.ESPERA and flag <= 10:
+                    flag += 1
+                    pass  
             screen_controller.switch_screen(screen_controller.pause_screen)
 
         case game_state.PERDEU:
+            if prev_state == game_state.ESPERA and flag <= 10:
+                    flag += 1
+                    pass  
             if prev_state != game_state.PERDEU:
                 screen_controller.in_game_screen.reinit()
                 print("REINIT")
@@ -71,6 +77,9 @@ def run_states(game_state, prev_state):
             screen_controller.switch_screen(screen_controller.game_over_screen)
 
         case game_state.GANHOU:
+            if prev_state == game_state.ESPERA and flag <= 10:
+                    flag += 1
+                    pass  
             if prev_state != game_state.GANHOU:
                 screen_controller.in_game_screen.reinit()
                 print("REINIT")
