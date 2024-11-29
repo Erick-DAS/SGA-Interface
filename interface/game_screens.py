@@ -37,6 +37,12 @@ background = pygame.transform.scale(background, bounds)
 background2 = pygame.image.load(os.path.join(assets_path, "grass_apple.png"))
 background2 = pygame.transform.scale(background2, bounds)
 
+snake_head_asset = pygame.image.load(os.path.join(assets_path, "snake_head.png"))
+snake_mouth_open_asset = pygame.image.load(os.path.join(assets_path, "snake_mouth_open.png"))
+snake_body_asset = pygame.image.load(os.path.join(assets_path, "snake_body.png"))
+snake_curve_asset = pygame.image.load(os.path.join(assets_path, "snake_curve.png"))
+snake_tail_asset = pygame.image.load(os.path.join(assets_path, "snake_tail.png"))
+
 ########################################
 
 class GameScreenController:
@@ -207,7 +213,7 @@ class InGameScreen(GameScreens):
         self.bin_snake_pos = bin_snake_pos
         self.bin_apple_pos = bin_apple_pos
 
-        self.snake_body = []  # List of positions representing the snake's body
+        self.snake = []  # List of positions representing the snake's body
         self.snake_length = 2  # Initial length of the snake
 
         self.food_pos = self.bits_to_position(self.bin_apple_pos)
@@ -230,14 +236,14 @@ class InGameScreen(GameScreens):
         new_head = self.bits_to_position(self.bin_snake_pos)
 
         # Initialize snake body if empty
-        if not self.snake_body:
-            self.snake_body.append(new_head)
+        if not self.snake:
+            self.snake.append(new_head)
             return
 
         # Calculate direction based on new head position
-        prev_head = self.snake_body[0]
+        prev_head = self.snake[0]
         if new_head != prev_head:
-            self.snake_body.insert(0, new_head)
+            self.snake.insert(0, new_head)
             # Check for food collision
             if new_head == self.food_pos:
                 self.snake_length += 1  # Increase length
@@ -247,8 +253,8 @@ class InGameScreen(GameScreens):
                 self.food_eaten = False
 
             # Trim the snake body to maintain the length
-            if len(self.snake_body) > self.snake_length:
-                self.snake_body.pop()
+            if len(self.snake) > self.snake_length:
+                self.snake.pop()
 
     def render(self):
         # Background
