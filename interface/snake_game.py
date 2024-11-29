@@ -39,10 +39,14 @@ bin_diff: List[int] = [0]  # 0 = 8 apples to win, 1 = 16 apples to win
 
 def run_states(game_state, prev_state):
     # print(f"prev_state: {prev_state}; current_state: {game_state}")
+    flag = 0
 
     match game_state:
         case game_state.IDLE:
             if prev_state != game_state.IDLE:
+                if prev_state == game_state.ESPERA and flag <= 10:
+                    flag += 1
+                    pass   
                 screen_controller.in_game_screen.reinit()
                 print("REINIT")
 
@@ -52,6 +56,7 @@ def run_states(game_state, prev_state):
             )
 
         case game_state.ESPERA:
+            flag = 0
             screen_controller.switch_screen(screen_controller.in_game_screen)
             screen_controller.current_screen.update_snake(bin_apple_pos, bin_snake_pos)
 

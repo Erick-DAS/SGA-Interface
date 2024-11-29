@@ -1,23 +1,24 @@
-# game_screens.py
-
 import os
 import pygame
 from pygame.locals import *
-from typing import List
 
 pygame.init()
 pygame.font.init()
 
 ########################################
-# Window values
-bounds = (800, 800)  # Grid size
+# window values
+bounds = (800, 800)  # grid_size
 block_size = 100
 window = pygame.display.set_mode(bounds)
-pygame.display.set_caption('Snake Game')
 
-# Set up fonts
+# set up fonts
+
+# select current path of where the file is being executed
 system_path = os.path.dirname(os.path.abspath(__file__))
-assets_path = os.path.join(os.path.dirname(system_path), "assets")
+# return to parent folder;
+system_path = os.path.dirname(system_path)
+# enter assets folder
+assets_path = os.path.join(system_path, "assets")
 
 font_path = os.path.join(assets_path, "PressStart2P-Regular.ttf")
 little_bigger_font_size = 85
@@ -27,26 +28,45 @@ little_bigger_font = pygame.font.Font(font_path, little_bigger_font_size)
 big_font = pygame.font.Font(font_path, big_font_size)
 small_font = pygame.font.Font(font_path, small_font_size)
 
-# Load assets
+# load assets
+
+## Apple
 apple_asset = pygame.image.load(os.path.join(assets_path, "apple_asset.png"))
 apple_asset = pygame.transform.scale(apple_asset, (block_size, block_size))
 
+## Background
 background = pygame.image.load(os.path.join(assets_path, "grass.png"))
 background = pygame.transform.scale(background, bounds)
 
 background2 = pygame.image.load(os.path.join(assets_path, "grass_apple.png"))
 background2 = pygame.transform.scale(background2, bounds)
 
-snake_head_asset = pygame.image.load(os.path.join(assets_path, "snake_head.png"))
-snake_mouth_open_asset = pygame.image.load(os.path.join(assets_path, "snake_mouth_open.png"))
-snake_body_asset = pygame.image.load(os.path.join(assets_path, "snake_body.png"))
-snake_curve_asset = pygame.image.load(os.path.join(assets_path, "snake_curve.png"))
-snake_tail_asset = pygame.image.load(os.path.join(assets_path, "snake_tail.png"))
+## Snake Assets
+snake_head_img = pygame.image.load(os.path.join(assets_path, "snake_head.png"))
+snake_head_img = pygame.transform.scale(snake_head_img, (block_size, block_size))
 
+snake_body_img = pygame.image.load(os.path.join(assets_path, "snake_body.png"))
+snake_body_img = pygame.transform.scale(snake_body_img, (block_size, block_size))
+
+snake_curve_img = pygame.image.load(os.path.join(assets_path, "snake_curve.png"))
+snake_curve_img = pygame.transform.scale(snake_curve_img, (block_size, block_size))
+
+snake_tail_img = pygame.image.load(os.path.join(assets_path, "snake_tail.png"))
+snake_tail_img = pygame.transform.scale(snake_tail_img, (block_size, block_size))
+
+background1_coords = -800
+background2_coords = 0
+## Snake Directions
+UP = (0, -1)
+DOWN = (0, 1)
+LEFT = (-1, 0)
+RIGHT = (1, 0)
 ########################################
+
 
 class GameScreenController:
     def __init__(self, bin_apple_pos, bin_snake_pos, bin_vel, bin_mode, bin_diff):
+        # Initialize the window and font values used throughout the game
         self.window = window
         self.big_font = big_font
         self.small_font = small_font
@@ -65,17 +85,20 @@ class GameScreenController:
             window, big_font, small_font, little_bigger_font
         )
         self.in_game_screen = InGameScreen(
-            window, big_font, small_font, bin_snake_pos, bin_apple_pos
+            window, big_font, small_font, bin_apple_pos, bin_snake_pos
         )
 
         # Start with the initial screen
         self.current_screen = self.init_screen
 
     def switch_screen(self, new_screen):
+        # Switch the current screen to the specified one
         self.current_screen = new_screen
 
     def render_current_screen(self):
+        # Render the currently active screen
         self.current_screen.render()
+
 
 class GameScreens:
     def __init__(self, window, big_font, small_font, little_bigger_font):
@@ -87,9 +110,12 @@ class GameScreens:
     def render(self):
         pass
 
+
 class InitScreen(GameScreens):
     def __init__(self, window, big_font, small_font, bin_vel, bin_mode, bin_diff):
         super().__init__(window, big_font, small_font, little_bigger_font)
+        self.options = ["Border", "Difficulty", "speed"]
+        self.current_selection = 0  # Index of the currently selected option
         self.bin_vel = bin_vel
         self.bin_mode = bin_mode
         self.bin_diff = bin_diff
@@ -101,7 +127,7 @@ class InitScreen(GameScreens):
         boundary = self.bin_mode
         difficulty = self.bin_diff
 
-        # Background animation
+        # background
         self.window.blit(background, (int(self.background1_coords), 0))
         self.window.blit(background2, (int(self.background2_coords), 0))
 
@@ -114,35 +140,49 @@ class InitScreen(GameScreens):
         if self.background2_coords >= 800:
             self.background2_coords = -800
 
-        # Title and options
+        # Title
         title_background_text = self.little_bigger_font.render("S.G.A 2.0", True, (0, 0, 0))
         title_background_rect = title_background_text.get_rect(
             center=(bounds[0] / 2 + 6, bounds[1] / 2 - 115)
         )
 
-        title_text = self.big_font.render("S.G.A 2.0", True, (179, 20, 58))
+        title_text = self.big_font.render(
+            "S.G.A 2.0", True, (179, 20, 58)
+        )  # 122, 13, 39  24, 106, 237   179, 20, 58
         title_rect = title_text.get_rect(center=(bounds[0] / 2, bounds[1] / 2 - 120))
 
-        boundary_text = self.small_font.render(
-            f"Mode: {'No Border' if boundary == 0 else 'Border'}",
-            True,
-            (24, 106, 237) if boundary == 0 else (209, 38, 38)
-        )
+        if boundary == 0:
+            boundary_text = self.small_font.render(
+                "Mode: No Border", True, (24, 106, 237)
+            )
+        else:
+            boundary_text = self.small_font.render("Mode: Border", True, (209, 38, 38))
+
         boundary_rect = boundary_text.get_rect(center=(bounds[0] / 2, bounds[1] / 2))
 
-        difficulty_text = self.small_font.render(
-            f"Difficulty: {'Normal' if difficulty == 0 else 'Hard'}",
-            True,
-            (24, 106, 237) if difficulty == 0 else (209, 38, 38)
-        )
-        difficulty_rect = difficulty_text.get_rect(center=(bounds[0] / 2, bounds[1] / 2 + 40))
+        if difficulty == 0:
+            difficulty_text = self.small_font.render(
+                "Difficulty: Normal", True, (24, 106, 237)
+            )
+        else:
+            difficulty_text = self.small_font.render(
+                "Difficulty: Hard", True, (209, 38, 38)
+            )
 
-        velocity_text = self.small_font.render(
-            f"Speed: {'Normal' if velocity == 0 else 'Fast'}",
-            True,
-            (24, 106, 237) if velocity == 0 else (209, 38, 38)
+        difficulty_rect = difficulty_text.get_rect(
+            center=(bounds[0] / 2, bounds[1] / 2 + 40)
         )
-        velocity_rect = velocity_text.get_rect(center=(bounds[0] / 2, bounds[1] / 2 + 80))
+
+        if velocity == 0:
+            velocity_text = self.small_font.render(
+                "Speed: Normal", True, (24, 106, 237)
+            )
+        else:
+            velocity_text = self.small_font.render("Speed: Fast", True, (209, 38, 38))
+
+        velocity_rect = velocity_text.get_rect(
+            center=(bounds[0] / 2, bounds[1] / 2 + 80)
+        )
 
         self.window.blit(title_background_text, title_background_rect)
         self.window.blit(title_text, title_rect)
@@ -157,29 +197,42 @@ class InitScreen(GameScreens):
         self.bin_mode = bin_mode
         self.bin_diff = bin_diff
 
+
 class GameOverScreen(GameScreens):
     def render(self):
+        # background
         self.window.blit(background, (0, 0))
 
+        # text backgrounf
         text1_background = self.little_bigger_font.render("Game Over", True, (0, 0, 0))
+
+        # declare what will be written
         text1 = self.big_font.render("Game Over", True, (179, 20, 58))
 
+        # declare the position of the text
         text1_background_rect = text1_background.get_rect(
             center=(bounds[0] / 2 + 6, bounds[1] / 2 - 115)
         )
+
         text1_rect = text1.get_rect(center=(bounds[0] / 2, bounds[1] / 2 - 120))
 
         self.window.blit(text1_background, text1_background_rect)
         self.window.blit(text1, text1_rect)
         pygame.display.update()
+
 
 class GameWonScreen(GameScreens):
     def render(self):
+        # background
         self.window.blit(background, (0, 0))
 
-        text1_background = self.little_bigger_font.render("You Won!", True, (0, 0, 0))
-        text1 = self.big_font.render("You Won!", True, (179, 20, 58))
+        # text background
+        text1_background = self.little_bigger_font.render("Ganhou!", True, (0, 0, 0))
 
+        # declare what will be written  
+        text1 = self.big_font.render("Ganhou!", True, (179, 20, 58))
+
+        # declare the position of the text
         text1_background_rect = text1_background.get_rect(
             center=(bounds[0] / 2 + 6, bounds[1] / 2 - 115)
         )
@@ -188,14 +241,20 @@ class GameWonScreen(GameScreens):
         self.window.blit(text1_background, text1_background_rect)
         self.window.blit(text1, text1_rect)
         pygame.display.update()
+
 
 class PauseScreen(GameScreens):
     def render(self):
+        # background
         self.window.blit(background, (0, 0))
 
+        # text background
         text1_background = self.little_bigger_font.render("Pause", True, (0, 0, 0))
+
+        # declare what will be written
         text1 = self.big_font.render("Pause", True, (179, 20, 58))
 
+        # declare the position of the text
         text1_background_rect = text1_background.get_rect(
             center=(bounds[0] / 2 + 6, bounds[1] / 2 - 115)
         )
@@ -205,137 +264,187 @@ class PauseScreen(GameScreens):
         self.window.blit(text1, text1_rect)
         pygame.display.update()
 
+
 class InGameScreen(GameScreens):
-    def __init__(self, window, big_font, small_font, bin_snake_pos, bin_apple_pos):
+    def __init__(self, window, big_font, small_font, snake_pos, apple_pos):
         super().__init__(window, big_font, small_font, little_bigger_font)
-        self.clock = pygame.time.Clock()
 
-        self.bin_snake_pos = bin_snake_pos
-        self.bin_apple_pos = bin_apple_pos
-
-        self.snake = []  # List of positions representing the snake's body
-        self.snake_length = 2  # Initial length of the snake
-
-        self.food_pos = self.bits_to_position(self.bin_apple_pos)
-        self.prev_food_pos = self.food_pos
+        # Initialize the snake and food
+        self.snake = [
+            [2 * block_size, 1 * block_size],
+            [1 * block_size, 1 * block_size],
+            [1 * block_size, 1 * block_size],
+        ]
+        self.food_pos = [
+            ((apple_pos[3] * 4 + apple_pos[4] * 2 + apple_pos[5] * 1) * block_size),
+            ((apple_pos[0] * 4 + apple_pos[1] * 2 + apple_pos[2] * 1) * block_size),
+        ]
         self.food_eaten = False
+        self.snake_pos = snake_pos
+        self.apple_pos = apple_pos
+        self.prev_food_pos = apple_pos
+        self.new_food_item = 0
 
-    def bits_to_position(self, bits: List[int]):
-        # Convert 6 bits into x, y coordinates (3 bits each)
-        x_bits = bits[3:6]
-        y_bits = bits[0:3]
-        x = (x_bits[0] * 4 + x_bits[1] * 2 + x_bits[2]) * block_size + block_size // 2
-        y = (y_bits[0] * 4 + y_bits[1] * 2 + y_bits[2]) * block_size + block_size // 2
-        return [x, y]
+    def get_direction(self, a, b):
+        dx = (b[0] - a[0]) // block_size
+        dy = (b[1] - a[1]) // block_size
 
-    def update_snake(self, bin_apple_pos, bin_snake_pos):
-        self.bin_snake_pos = bin_snake_pos
-        self.bin_apple_pos = bin_apple_pos
+        if abs(dx) > 1:
+            dx = -dx // abs(dx)
+        
+        if abs(dy) > 1:
+            dy = -dy // abs(dy)
+        
+        return (dx, dy)
 
-        self.food_pos = self.bits_to_position(self.bin_apple_pos)
-        new_head = self.bits_to_position(self.bin_snake_pos)
+    def is_opposite(self, dir1, dir2):
+        return (dir1[0] == -dir2[0] and dir1[1] == -dir2[1])
 
-        # Initialize snake body if empty
-        if not self.snake:
-            self.snake.append(new_head)
-            return
+    def get_head_image(self, direction):
+        rotation_mapping = {
+            UP: 180,
+            DOWN: 0,
+            LEFT: 270,
+            RIGHT: 90,
+        }
+        rotation = rotation_mapping.get(direction, 0)
+        return pygame.transform.rotate(snake_head_img, rotation)
 
-        # Calculate direction based on new head position
-        prev_head = self.snake[0]
-        if new_head != prev_head:
-            self.snake.insert(0, new_head)
-            # Check for food collision
-            if new_head == self.food_pos:
-                self.snake_length += 1  # Increase length
-                self.food_eaten = True
-                print("Snake ate the food")
+    def get_tail_image(self, direction):
+        rotation_mapping = {
+            UP: 0,
+            DOWN: 180,
+            LEFT: 90,
+            RIGHT: 270,
+        }
+        rotation = rotation_mapping.get(direction, 0)
+        return pygame.transform.rotate(snake_tail_img, rotation)
+
+    def get_body_image(self, dir_prev, dir_next):
+        if self.is_opposite(dir_prev, dir_next):
+            # Straight segment
+            if dir_prev in [UP, DOWN]:
+                return snake_body_img
+
             else:
-                self.food_eaten = False
 
-            # Trim the snake body to maintain the length
-            if len(self.snake) > self.snake_length:
-                self.snake.pop()
+                return pygame.transform.rotate(snake_body_img, 90)
+
+        else:
+            # Curve segment
+            curve_rotation_mapping = {
+                (UP, RIGHT): 180,
+                (LEFT, DOWN): 0,
+                (RIGHT, DOWN): 90,
+                (UP, LEFT): 270,
+                (DOWN, LEFT): 0,
+                (RIGHT, UP): 180,
+                (DOWN, RIGHT): 90,
+                (LEFT, UP): 270,
+            }
+            rotation = curve_rotation_mapping.get((dir_prev, dir_next)) or curve_rotation_mapping.get((dir_next, dir_prev))
+            if rotation is not None:
+                return pygame.transform.rotate(snake_curve_img, rotation)
+            else:
+                return snake_body_img  # Default to straight body if no match
+
+    def update_snake(self, apple_pos, snake_pos):
+        self.snake_pos = snake_pos
+        self.apple_pos = apple_pos
+        self.food_pos = [
+            ((apple_pos[3] * 4 + apple_pos[4] * 2 + apple_pos[5] * 1) * block_size),
+            ((apple_pos[0] * 4 + apple_pos[1] * 2 + apple_pos[2] * 1) * block_size),
+        ]
+
+        # Calculate new head position
+        new_head = [
+            (
+                (self.snake_pos[3] * 4 + self.snake_pos[4] * 2 + self.snake_pos[5] * 1)
+                * block_size
+            ),
+            (
+                (self.snake_pos[0] * 4 + self.snake_pos[1] * 2 + self.snake_pos[2] * 1)
+                * block_size
+            ),
+        ]
+        changed_pos = False
+
+        # Insert new head
+        if new_head != self.snake[0]:
+            self.snake.insert(0, new_head)
+            changed_pos = True
+        else:
+            changed_pos = False
+
+        # Check for food collision
+        if new_head != self.prev_food_pos and changed_pos == True:
+            self.snake.pop()  # Remove tail
+        elif new_head == self.food_pos and changed_pos == True:
+            print("Ate an apple!")
+
+        self.prev_food_pos = self.food_pos
+
+        return False  # Game continues
 
     def render(self):
-        # Background
+        # background
         self.window.blit(background, (0, 0))
 
-        for pos in self.snake:
-            pygame.draw.rect(
-                self.window, (35, 165, 35), (*pos, block_size - 10, block_size - 10)
-            )
-
-        # Draw the eyes on the snake's head
-        if len(self.snake) >= 1:
-            head = self.snake[0]
-            head_x, head_y = head
-
-            if len(self.snake) > 1:
-                neck = self.snake[1]
-                # Calculate direction vector from neck to head
-                dx = head_x - neck[0]
-                dy = head_y - neck[1]
+        # draw snake
+        for index, pos in enumerate(self.snake):
+            if index == 0:
+                # Head
+                if len(self.snake) > 1:
+                    head_direction = self.get_direction(self.snake[1], self.snake[0])
+                else:
+                    head_direction = DOWN  # Default direction
+                head_img = self.get_head_image(head_direction)
+                self.window.blit(head_img, pos)
+            elif index == len(self.snake) - 1:
+                # Tail
+                tail_direction = self.get_direction(self.snake[-2], self.snake[-1])
+                tail_img = self.get_tail_image(tail_direction)
+                self.window.blit(tail_img, pos)
             else:
-                # Default direction if only one segment
-                dx, dy = 0, -1  # Moving upwards
+                # Middle segments
 
-            # Normalize the direction vector
-            length = (dx ** 2 + dy ** 2) ** 0.5
-            if length != 0:
-                dx /= length
-                dy /= length
-            else:
-                dx, dy = 0, -1  # Default direction
+                prev_segment = self.snake[index - 1]
+                next_segment = self.snake[index + 1]
 
-            # Calculate the perpendicular vector for eye positioning
-            ex = -dy
-            ey = dx
+                direction_to_prev = self.get_direction(pos, prev_segment)
+                direction_to_next = self.get_direction(pos, next_segment)
 
-            # Set the distance from the center to the eyes
-            eye_distance = (block_size - 10) // 4
-            eye_radius = (block_size - 10) // 8
+                print(self.get_direction(pos, next_segment))
+                print(self.get_direction(pos, next_segment))
+                print(self.get_direction(pos, next_segment))
 
-            # Calculate the center of the head
-            head_center_x = head_x + (block_size - 10) // 2
-            head_center_y = head_y + (block_size - 10) // 2
+                body_img = self.get_body_image(direction_to_prev, direction_to_next)
+                self.window.blit(body_img, pos)
 
-            # Calculate eye positions
-            eye1_x = int(head_center_x + ex * eye_distance + dx * eye_distance)
-            eye1_y = int(head_center_y + ey * eye_distance + dy * eye_distance)
-            eye2_x = int(head_center_x - ex * eye_distance + dx * eye_distance)
-            eye2_y = int(head_center_y - ey * eye_distance + dy * eye_distance)
-
-            # Draw the eyes as red rectangles
-            eye_width = eye_radius * 2
-            eye_height = eye_radius * 2
-
-            # Create rectangles for the eyes
-            eye1_rect = pygame.Rect(
-                eye1_x - eye_radius, eye1_y - eye_radius, eye_width, eye_height
-            )
-            eye2_rect = pygame.Rect(
-                eye2_x - eye_radius, eye2_y - eye_radius, eye_width, eye_height
-            )
-
-            # Draw the eyes
-            pygame.draw.rect(self.window, (255, 0, 0), eye1_rect)
-            pygame.draw.rect(self.window, (255, 0, 0), eye2_rect)
-
-        # Draw the apple
+        # print the apple asset
         self.window.blit(apple_asset, self.food_pos)
 
-        # Draw score
+        # draw score
         score = len(self.snake) - 2
         score_text = self.small_font.render(f"Score: {score}", True, (179, 20, 58))
         self.window.blit(score_text, (10, 10))
 
-        # Update the display
+        print('------------------------------------------------------------------------------------')
         pygame.display.update()
 
-
-
     def reinit(self):
-        self.snake_body = []
-        self.snake_length = 2
-        self.food_pos = self.bits_to_position(self.bin_apple_pos)
+        self.snake = [
+            (3 * block_size, 1 * block_size),
+            (2 * block_size, 1 * block_size),
+        ]
+        self.food_pos = [
+            (
+                (self.apple_pos[3] * 4 + self.apple_pos[4] * 2 + self.apple_pos[5] * 1)
+                * block_size
+            ),
+            (
+                (self.apple_pos[0] * 4 + self.apple_pos[1] * 2 + self.apple_pos[2] * 1)
+                * block_size
+            ),
+        ]
         self.food_eaten = False
