@@ -45,6 +45,9 @@ background2 = pygame.transform.scale(background2, bounds)
 snake_head_img = pygame.image.load(os.path.join(assets_path, "snake_head.png"))
 snake_head_img = pygame.transform.scale(snake_head_img, (block_size, block_size))
 
+snake_mouth_open_img = pygame.image.load(os.path.join(assets_path, "snake_mouth_open.png"))
+snake_mouth_open_img = pygame.transform.scale(snake_mouth_open_img, (block_size, block_size))
+
 snake_body_img = pygame.image.load(os.path.join(assets_path, "snake_body.png"))
 snake_body_img = pygame.transform.scale(snake_body_img, (block_size, block_size))
 
@@ -310,6 +313,16 @@ class InGameScreen(GameScreens):
         rotation = rotation_mapping.get(direction, 0)
         return pygame.transform.rotate(snake_head_img, rotation)
 
+    def get_head_mouth_image(self, direction):
+        rotation_mapping = {
+            UP: 180,
+            DOWN: 0,
+            LEFT: 270,
+            RIGHT: 90,
+        }
+        rotation = rotation_mapping.get(direction, 0)
+        return pygame.transform.rotate(snake_mouth_open_img, rotation)
+
     def get_tail_image(self, direction):
         rotation_mapping = {
             UP: 0,
@@ -398,7 +411,12 @@ class InGameScreen(GameScreens):
                     head_direction = self.get_direction(self.snake[1], self.snake[0])
                 else:
                     head_direction = DOWN  # Default direction
-                head_img = self.get_head_image(head_direction)
+                
+                if  head_direction == self.get_direction(self.snake[0], self.food_pos):
+                    head_img = self.get_head_mouth_image(head_direction)
+                else: 
+                    head_img = self.get_head_image(head_direction)
+
                 self.window.blit(head_img, pos)
             elif index == len(self.snake) - 1:
                 # Tail
