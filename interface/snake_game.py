@@ -37,16 +37,16 @@ bin_diff: List[int] = [0]  # 0 = 8 apples to win, 1 = 16 apples to win
 ########################
 
 
-def run_states(game_state, prev_state):
+def run_states(game_state, prev_state, flag):
     # print(f"prev_state: {prev_state}; current_state: {game_state}")
-    flag = 0
 
     match game_state:
         case game_state.IDLE:
-            if prev_state != game_state.IDLE:
-                if prev_state == game_state.ESPERA and flag <= 10:
+            
+            if prev_state != game_state.IDLE and flag <= 25:
                     flag += 1
-                    pass   
+                    pass
+            else:           
                 screen_controller.in_game_screen.reinit()
                 print("REINIT")
 
@@ -114,6 +114,8 @@ def main():
 
     running = True
 
+    flag = 0
+
     prev_state = GameState.IDLE
 
     while running:
@@ -165,7 +167,7 @@ def main():
         msg = []
 
         states = GameState(bin_state)
-        run_states(states, prev_state)
+        run_states(states, prev_state, flag)
         prev_state = states
 
         screen_controller.render_current_screen()

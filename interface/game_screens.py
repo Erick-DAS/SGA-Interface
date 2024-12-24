@@ -274,9 +274,8 @@ class InGameScreen(GameScreens):
 
         # Initialize the snake and food
         self.snake = [
+            [3 * block_size, 1 * block_size],
             [2 * block_size, 1 * block_size],
-            [1 * block_size, 1 * block_size],
-            [1 * block_size, 1 * block_size],
         ]
         self.food_pos = [
             ((apple_pos[3] * 4 + apple_pos[4] * 2 + apple_pos[5] * 1) * block_size),
@@ -418,7 +417,7 @@ class InGameScreen(GameScreens):
                     head_img = self.get_head_image(head_direction)
 
                 self.window.blit(head_img, pos)
-            elif index == len(self.snake) - 1:
+            elif index == len(self.snake) - 1 :
                 # Tail
                 tail_direction = self.get_direction(self.snake[-2], self.snake[-1])
                 tail_img = self.get_tail_image(tail_direction)
@@ -431,10 +430,6 @@ class InGameScreen(GameScreens):
 
                 direction_to_prev = self.get_direction(pos, prev_segment)
                 direction_to_next = self.get_direction(pos, next_segment)
-
-                print(self.get_direction(pos, next_segment))
-                print(self.get_direction(pos, next_segment))
-                print(self.get_direction(pos, next_segment))
 
                 body_img = self.get_body_image(direction_to_prev, direction_to_next)
                 self.window.blit(body_img, pos)
